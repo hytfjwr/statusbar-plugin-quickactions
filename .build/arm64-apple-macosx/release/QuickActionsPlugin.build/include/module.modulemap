@@ -1,3 +1,0 @@
-module QuickActionsPlugin {
-    header "/Users/hayato.fujiwara/Dev/poc/statusbar-plugin-quickactions/.build/arm64-apple-macosx/release/QuickActionsPlugin.build/include/QuickActionsPlugin-Swift.h"
-}
