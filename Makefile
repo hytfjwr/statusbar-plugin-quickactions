@@ -1,6 +1,6 @@
 PLUGIN_NAME := QuickActionsPlugin
 PLUGIN_ID := com.statusbar.quickactions
-VERSION := 0.1.0
+VERSION ?= 0.1.0
 STATUSBARKIT_VERSION := 1.0.0
 SWIFT_VERSION := 6.2
 BUNDLE_NAME := quickactions
