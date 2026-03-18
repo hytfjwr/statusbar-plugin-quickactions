@@ -13,3 +13,11 @@ public struct QuickActionsPlugin: StatusBarPlugin {
         widgets = [QuickActionsWidget()]
     }
 }
+
+// MARK: - Plugin Factory
+
+@_cdecl("createStatusBarPlugin")
+public func createStatusBarPlugin() -> UnsafeMutableRawPointer {
+    let box = PluginBox { QuickActionsPlugin() }
+    return Unmanaged.passRetained(box).toOpaque()
+}
