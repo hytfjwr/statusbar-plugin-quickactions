@@ -44,7 +44,7 @@ final class QuickActionsSettings: WidgetConfigProvider {
 
     // MARK: - JSON I/O
 
-    func loadActions() {
+    private func loadActions() {
         let url = URL(fileURLWithPath: resolvedConfigPath)
         guard let data = try? Data(contentsOf: url) else {
             actions = []
@@ -54,7 +54,7 @@ final class QuickActionsSettings: WidgetConfigProvider {
         actions = config?.actions ?? []
     }
 
-    func saveActions() {
+    private func saveActions() {
         let url = URL(fileURLWithPath: resolvedConfigPath)
         let dir = url.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

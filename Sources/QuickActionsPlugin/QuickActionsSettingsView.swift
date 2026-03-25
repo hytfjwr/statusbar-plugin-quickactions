@@ -63,7 +63,7 @@ public struct QuickActionsSettingsView: View {
 
 // MARK: - ActionEditSheet
 
-struct ActionEditSheet: View {
+private struct ActionEditSheet: View {
     enum Mode: Identifiable {
         case add
         case edit(QuickAction)
