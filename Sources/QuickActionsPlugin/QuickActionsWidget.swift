@@ -110,7 +110,7 @@ struct QuickActionsPopupContent: View {
         let center = UNUserNotificationCenter.current()
         let notificationSettings = await center.notificationSettings()
         if notificationSettings.authorizationStatus == .notDetermined {
-            try? await center.requestAuthorization(options: [.alert])
+            _ = try? await center.requestAuthorization(options: [.alert])
         }
         let content = UNMutableNotificationContent()
         content.title = "Quick Actions"
