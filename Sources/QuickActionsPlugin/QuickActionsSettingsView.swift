@@ -4,6 +4,7 @@ public struct QuickActionsSettingsView: View {
     let settings = QuickActionsSettings.shared
     @State private var editingAction: QuickAction?
     @State private var isAdding = false
+    @State private var showReloadAlert = false
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -24,7 +25,7 @@ public struct QuickActionsSettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 20)
             } else {
-                List {
+                VStack(spacing: 4) {
                     ForEach(settings.actions) { action in
                         HStack(spacing: 8) {
                             Image(systemName: action.icon)
@@ -39,24 +40,35 @@ public struct QuickActionsSettingsView: View {
                             Spacer()
                             Button("Edit") { editingAction = action }
                                 .buttonStyle(.borderless)
-                            Button("Delete") { settings.deleteAction(id: action.id) }
-                                .buttonStyle(.borderless)
-                                .foregroundStyle(.red)
+                            Button("Delete") {
+                                settings.deleteAction(id: action.id)
+                                showReloadAlert = true
+                            }
+                            .buttonStyle(.borderless)
+                            .foregroundStyle(.red)
                         }
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
                     }
                 }
             }
         }
-        .padding()
         .sheet(isPresented: $isAdding) {
             ActionEditSheet(mode: .add) { action in
                 settings.addAction(action)
+                showReloadAlert = true
             }
         }
         .sheet(item: $editingAction) { action in
             ActionEditSheet(mode: .edit(action)) { updated in
                 settings.updateAction(updated)
+                showReloadAlert = true
             }
+        }
+        .alert("Reload Required", isPresented: $showReloadAlert) {
+            Button("OK") {}
+        } message: {
+            Text("Please reload the plugin for changes to take effect.")
         }
     }
 }
