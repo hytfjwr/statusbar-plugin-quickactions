@@ -1,5 +1,6 @@
 import StatusBarKit
 import SwiftUI
+import UserNotifications
 
 @MainActor
 @Observable
@@ -16,6 +17,14 @@ public final class QuickActionsWidget: StatusBarWidget {
     public func start() {}
     public func stop() {
         popupPanel?.hidePopup()
+    }
+
+    public typealias SettingsBody = QuickActionsSettingsView
+
+    public var preferredSettingsSize: CGSize? { CGSize(width: 420, height: 400) }
+
+    public func settingsBody() -> QuickActionsSettingsView {
+        QuickActionsSettingsView()
     }
 
     public func body() -> some View {
@@ -57,6 +66,7 @@ public final class QuickActionsWidget: StatusBarWidget {
 // MARK: - QuickActionsPopupContent
 
 struct QuickActionsPopupContent: View {
+    let settings = QuickActionsSettings.shared
     let dismiss: () -> Void
 
     var body: some View {
@@ -64,22 +74,52 @@ struct QuickActionsPopupContent: View {
             PopupSectionHeader("Quick Actions")
 
             VStack(spacing: 2) {
-                PopupRow(icon: "macwindow.on.rectangle", label: "Fix Windows") {
-                    Task { try? await ShellCommand.run("~/.local/bin/aerospace-fix-windows --quiet") }
-                    dismiss()
-                }
-                PopupRow(icon: "cup.and.saucer", label: "Awake") {
-                    Task { try? await ShellCommand.run("~/.local/bin/awake toggle") }
-                    dismiss()
-                }
-                PopupRow(icon: "trash", label: "Clean Neovim Cache") {
-                    Task { try? await ShellCommand.run("~/.local/bin/nvim-clean") }
-                    dismiss()
+                if settings.actions.isEmpty {
+                    VStack(spacing: 4) {
+                        Text("No actions configured.")
+                        Text("Add actions in widget settings.")
+                    }
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
+                    .padding(.vertical, 12)
+                } else {
+                    ForEach(settings.actions) { action in
+                        PopupRow(icon: action.icon, label: action.label) {
+                            Task {
+                                do {
+                                    _ = try await ShellCommand.run(action.command)
+                                } catch {
+                                    await sendErrorNotification(
+                                        actionLabel: action.label,
+                                        error: error
+                                    )
+                                }
+                            }
+                            dismiss()
+                        }
+                    }
                 }
             }
             .padding(.horizontal, 6)
             .padding(.bottom, 8)
         }
         .frame(width: 230)
+    }
+
+    private func sendErrorNotification(actionLabel: String, error: Error) async {
+        let center = UNUserNotificationCenter.current()
+        let notificationSettings = await center.notificationSettings()
+        if notificationSettings.authorizationStatus == .notDetermined {
+            try? await center.requestAuthorization(options: [.alert])
+        }
+        let content = UNMutableNotificationContent()
+        content.title = "Quick Actions"
+        content.body = "\(actionLabel) failed: \(error.localizedDescription)"
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil
+        )
+        try? await center.add(request)
     }
 }

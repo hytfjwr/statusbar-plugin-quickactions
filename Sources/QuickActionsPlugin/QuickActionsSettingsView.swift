@@ -1,11 +1,11 @@
 import SwiftUI
 
-struct QuickActionsSettingsView: View {
+public struct QuickActionsSettingsView: View {
     let settings = QuickActionsSettings.shared
     @State private var editingAction: QuickAction?
     @State private var isAdding = false
 
-    var body: some View {
+    public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Actions").font(.headline)
