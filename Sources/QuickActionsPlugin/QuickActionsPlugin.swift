@@ -10,6 +10,7 @@ public struct QuickActionsPlugin: StatusBarPlugin {
     public let widgets: [any StatusBarWidget]
 
     public init() {
+        _ = QuickActionsSettings.shared
         widgets = [QuickActionsWidget()]
     }
 }
