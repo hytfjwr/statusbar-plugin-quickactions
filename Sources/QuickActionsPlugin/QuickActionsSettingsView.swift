@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 public struct QuickActionsSettingsView: View {
@@ -165,5 +166,40 @@ private struct ActionEditSheet: View {
         }
         .padding()
         .frame(width: 350)
+        .background(EditKeyHandler())
+    }
+}
+
+// MARK: - EditKeyHandler
+
+/// Enables standard edit shortcuts (Cmd+C/V/X/A) in sheets hosted by
+/// menubar apps that lack an Edit menu.
+private struct EditKeyHandler: NSViewRepresentable {
+    func makeNSView(context: Context) -> EditKeyView { EditKeyView() }
+    func updateNSView(_ nsView: EditKeyView, context: Context) {}
+}
+
+private final class EditKeyView: NSView {
+    override var acceptsFirstResponder: Bool { true }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        guard event.modifierFlags.contains(.command) else {
+            return super.performKeyEquivalent(with: event)
+        }
+        let selector: Selector? = switch event.charactersIgnoringModifiers {
+        case "c": #selector(NSText.copy(_:))
+        case "v": #selector(NSText.paste(_:))
+        case "x": #selector(NSText.cut(_:))
+        case "a": #selector(NSText.selectAll(_:))
+        case "z":
+            event.modifierFlags.contains(.shift)
+                ? Selector(("redo:"))
+                : #selector(UndoManager.undo)
+        default: nil
+        }
+        guard let selector else {
+            return super.performKeyEquivalent(with: event)
+        }
+        return NSApp.sendAction(selector, to: nil, from: self)
     }
 }
