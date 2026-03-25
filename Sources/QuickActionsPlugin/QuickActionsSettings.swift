@@ -44,7 +44,7 @@ final class QuickActionsSettings: WidgetConfigProvider {
 
     // MARK: - JSON I/O
 
-    private func loadActions() {
+    func loadActions() {
         let url = URL(fileURLWithPath: resolvedConfigPath)
         guard let data = try? Data(contentsOf: url) else {
             actions = []

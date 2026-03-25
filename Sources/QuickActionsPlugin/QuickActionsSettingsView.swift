@@ -4,7 +4,7 @@ public struct QuickActionsSettingsView: View {
     let settings = QuickActionsSettings.shared
     @State private var editingAction: QuickAction?
     @State private var isAdding = false
-    @State private var showReloadAlert = false
+    @State private var needsReload = false
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -42,7 +42,7 @@ public struct QuickActionsSettingsView: View {
                                 .buttonStyle(.borderless)
                             Button("Delete") {
                                 settings.deleteAction(id: action.id)
-                                showReloadAlert = true
+                                needsReload = true
                             }
                             .buttonStyle(.borderless)
                             .foregroundStyle(.red)
@@ -52,23 +52,35 @@ public struct QuickActionsSettingsView: View {
                     }
                 }
             }
+
+            if needsReload {
+                HStack {
+                    Text("Changes saved.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        settings.loadActions()
+                        needsReload = false
+                    } label: {
+                        Label("Reload", systemImage: "arrow.clockwise")
+                    }
+                    .controlSize(.small)
+                }
+                .padding(.top, 4)
+            }
         }
         .sheet(isPresented: $isAdding) {
             ActionEditSheet(mode: .add) { action in
                 settings.addAction(action)
-                showReloadAlert = true
+                needsReload = true
             }
         }
         .sheet(item: $editingAction) { action in
             ActionEditSheet(mode: .edit(action)) { updated in
                 settings.updateAction(updated)
-                showReloadAlert = true
+                needsReload = true
             }
-        }
-        .alert("Reload Required", isPresented: $showReloadAlert) {
-            Button("OK") {}
-        } message: {
-            Text("Please reload the plugin for changes to take effect.")
         }
     }
 }
